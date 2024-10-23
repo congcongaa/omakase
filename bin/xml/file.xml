@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="file">
+
+	<!-- [A_card2_2] FileVO를 받아서 DB에 추가하는 쿼리 -->
+ 	<insert id="insertFile" parameterType="vo.FileVO">
+ 		INSERT INTO file( empno, cate, file_name, file_date, file_url)
+ 		VALUES( #{empno}, #{cate}, #{file_name}, now(), #{file_url})
+ 	</insert>
+ 	
+ 	<!-- empno나 deptno를 받아서 file객체를 찾는 쿼리 -->
+ 	<select id="selectFileList" resultType="vo.FileVO" parameterType="int">
+        SELECT f.* FROM file f
+ 		INNER JOIN emp e 
+ 		ON f.empno = e.empno
+	 	WHERE f.empno = #{empno}
+	 	OR e.deptno = #{deptno}
+ 	</select>
+ 	
+ 	<select id="selectFileData" resultType="vo.FileVO" parameterType="String">
+ 		SELECT * FROM file 
+ 		WHERE w_idx = #{w_idx}
+ 	</select>
+ 	
+ 	<delete id="deleteFile" parameterType="String">
+ 		DELETE FROM file WHERE t_idx = #{idx};
+ 	</delete>
+ 	
+ 	<select id="selectedDeptFile" parameterType="Map" resultType ="vo.FileVO">
+ 		SELECT f.* 
+ 		FROM file f INNER JOIN emp e 
+ 		ON f.empno = e.empno
+ 		<where>
+ 			e.deptno = #{deptno}
+ 			<if test="f_title != null">
+ 			AND f.file_name LIKE CONCAT ('%',#{f_title},'%')
+ 			</if>
+			<if test="f_writer != null">
+			AND e.ename LIKE CONCAT ('%',#{f_writer},'%')
+			</if>
+			<if test="start_date != null">
+        	AND file_date &gt;= #{start_date}
+        	</if>
+        	<if test="end_date != null">
+        	AND file_date &lt;= #{end_date}
+        	</if>
+ 		</where>
+	</select>
+ 	
+ 	<!-- [A_card2_1] FileVO를 받아서 업데이트 하는 쿼리-->
+	<update id="updateFile" parameterType="vo.FileVO">
+		UPDATE file
+		<set>
+			<if test="cate != null">
+			cate = #{cate},
+			</if>
+			<if test="file_date != null">
+			file_date = now(),
+			</if>
+			<if test="file_url != null">
+			file_url = #{file_url}
+			</if>
+		</set>
+		WHERE w_idx = #{w_idx}
+	</update>
+ 	
+ 	
+</mapper>

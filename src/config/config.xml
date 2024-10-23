@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <environments default="">
+    <environment id="">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/omakase"/>
+        <property name="username" value="root"/> <!-- 컴퓨터마다 바꾸기 -->
+        <property name="password" value="1111"/> <!-- 컴퓨터마다 바꾸기 -->
+      </dataSource>
+    </environment>
+  </environments>
+  <mappers>
+  	<!-- resource db에서 읽을 sql구문이 들어있는 xml파일 -->
+  	<mapper resource="xml/attendance.xml"/>
+  	<mapper resource="xml/dept.xml"/>
+  	<mapper resource="xml/emp.xml"/>
+  	<mapper resource="xml/file.xml"/>
+  	<mapper resource="xml/login.xml"/>
+  	<mapper resource="xml/vacation.xml"/>
+  	<mapper resource="xml/w_log.xml"/>
+  	<mapper resource="xml/member.xml"/>
+  	<mapper resource="xml/authority.xml"/>
+  	
+  </mappers>
+</configuration>

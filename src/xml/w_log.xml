@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="w_log">
+	<select id="insertWlog" resultType="int" parameterType="vo.WLogVO">
+		INSERT INTO w_log (  empno, deptno, w_name, w_content, w_date, w_check)
+		VALUES( #{empno}, #{deptno}, #{w_name}, #{w_content}, #{w_date}, 0)
+ 	</select>
+ 	
+ 	<select id="all" resultType="vo.WLogVO">
+ 		SELECT w.w_idx, w.deptno, w.empno, w.w_name, w.w_content, w.w_date, e.ename FROM w_log w
+ 		INNER JOIN emp e ON w.empno = e.empno;
+ 	</select>
+ 	
+ 	<select id="selectWriter" resultType="vo.WLogVO" parameterType="int">
+ 		SELECT ename FROM emp 
+ 		WHERE empno = #{empno}
+ 	</select>
+ 	
+ 	<!-- private int w_idx, deptno, empno, w_check;
+	private String w_name, w_content, w_date; -->
+ 	<select id="searchAll" resultType="vo.WLogVO" parameterType="Map">
+		SELECT w.w_idx, w.deptno, w.empno, w.w_name, w.w_content, w.w_date, e.ename, w.w_check
+		FROM w_log w INNER JOIN emp e 
+		ON w.empno = e.empno
+ 		<trim prefixOverrides="AND">
+	 		<where>
+				<if test="ename != null">
+					e.ename LIKE CONCAT('%',#{ename},'%')
+				</if>			
+				<if test="w_title != null">
+					w.w_name LIKE CONCAT('%',#{w_title},'%')
+				</if>			
+				<if test="w_idx != null">
+					w.w_idx = #{w_idx}
+				</if> 
+	  			<if test="w_start_date != null and w_end_date != null">
+	  				AND w.w_date &gt;= #{w_start_date} AND w.w_date &lt;= #{w_end_date}
+	  	  		</if>
+	  	  		<if test="deptno != null">
+	  	  			AND e.deptno = #{deptno}
+	  	  		</if>
+			</where>
+		</trim>
+		ORDER BY empno
+	</select>
+	
+	<select id="findWLog" parameterType="String" resultType="vo.WLogVO">
+		SELECT *
+		FROM w_log
+		WHERE empno = #{empno}
+		ORDER BY w_date DESC LIMIT 7
+	</select>
+	
+	<!-- [A_card2_1] w_log의 인덱스 번호를 인자로 받아서 해당하는 WLogVO를 반환하는 쿼리 -->
+	<select id="selectWlog" resultType="vo.WLogVO" parameterType="String">
+		SELECT * FROM w_log
+		WHERE w_idx = #{w_idx}
+	</select>
+	
+	<!-- [A_card2] empno를 받아서 -->
+	<select id="myWlog" resultType="vo.WLogVO" parameterType="Map">
+		SELECT w.w_idx, w.deptno, w.empno, w.w_name, w.w_content, w.w_date, w.w_check, e.ename
+		FROM w_log w INNER JOIN emp e 
+		ON w.empno = e.empno
+ 		<trim prefixOverrides="AND">
+	 		<where>
+	 			e.empno =#{empno}
+				<if test="w_title != null">
+					AND w.w_name LIKE CONCAT('%',#{w_title},'%')
+				</if>			
+				<if test="w_idx != null">
+					AND w.w_idx = #{w_idx}
+				</if> 
+	  			<if test="w_start_date != null and w_end_date != null">
+	  				AND w.w_date &gt;= #{w_start_date} AND w.w_date &lt;= #{w_end_date}
+	  	  		</if>
+			</where>
+		</trim>
+	
+	</select>
+	
+	<!-- [A_card2_1] WLogVO를 받아서 업데이트 하는 쿼리-->
+	<update id="updateWlog" parameterType="vo.WLogVO">
+		UPDATE w_log
+		<set>
+			<if test="w_name != null">
+			w_name = #{w_name},
+			</if>
+			<if test="w_date != null">
+			w_date = now(),
+			</if>
+			<if test="w_content != null">
+			w_content = #{w_content}
+			</if>
+		</set>
+		WHERE w_idx = #{w_idx}
+	</update>
+	
+	<!-- [A_card2_2]  WLogVO를 받아서 w_idx를 반환하는 쿼리-->
+ 	<select id="getW_Idx" resultType = "int" parameterType="vo.WLogVO">
+ 		SELECT w_idx
+ 		FROM w_log
+ 		WHERE deptno = #{deptno} and empno = #{empno} and w_name =#{w_name} and w_content=#{w_content} and w_date=#{w_date}
+ 	</select>
+	
+	<update id="updateWlogCheck" parameterType="String">
+		UPDATE w_log
+		SET w_check=1
+		WHERE w_idx = #{w_idx}
+	</update>
+</mapper>

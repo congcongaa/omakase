@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dept">
+
+	<select id="getDname" resultType="String" parameterType="String">
+		select dname
+		from dept
+		where deptno = #{d}
+	</select>
+	
+	<!-- deptno를 인자로 받아서 해당하는 deptVO 객체를 반환하는 쿼리 -->
+    <select id="allDept" parameterType="String" resultType="vo.DeptVO">
+        select *
+        from dept
+        where deptno = #{deptno}
+    </select>
+    
+    <select id="dept" resultType="vo.DeptVO" parameterType="String">
+		select *
+		from dept  
+		where dname = #{n}
+	</select>
+	
+	<!-- 부서 이름을 통해 부서에 해당하는 사원들의 정보를 알아내는 셀렉트문 C_card2에서 부서정보 검색때 사용-->
+    <resultMap id="m1" type="vo.DeptVO">
+        <id property="deptno" column="deptno"/>
+        <collection property="e_list" ofType="vo.EmpVO" select="emp.C_card2_dept" column="deptno"/>
+        <collection property="v_list" ofType="vo.VacationVO" select="vacation.c2_va" column="deptno"/>
+    </resultMap>
+    
+    <select id="Dept_emp" parameterType="String" resultMap="m1">
+        select *
+        from dept
+        where dname
+        LIKE CONCAT('%', #{dname}, '%')
+    </select>
+</mapper>

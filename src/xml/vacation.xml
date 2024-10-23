@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="vacation">
+
+    <select id="search" parameterType="Map" resultType="vo.VacationVO">
+		select  v_cate, DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date, 
+		DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+		DATE_FORMAT(v_date, '%Y-%m-%d') AS v_date,
+	    v_content, v_check, empno, deptno, v_period
+        from vacation
+		<trim prefixOverrides="AND">
+			<where>
+				<if test="v_cate != null">
+					AND v_cate = #{v_cate}
+				</if>
+				<if test="start_date2 != null or end_date2 != null"> 
+	    			<if test="start_date2 != null">
+        				AND v_date &gt;= #{start_date2}
+        			</if>
+        			<if test="end_date2 != null">
+        				AND v_date &lt;= #{end_date2}
+        			</if>
+        		</if>		
+				<if test="start_date != null or end_date != null"> 
+	    			<if test="start_date != null">
+        				AND start_date &gt;= #{start_date}
+        			</if>
+        			<if test="end_date != null">
+        				AND end_date &lt;= #{end_date}
+        			</if>
+        		</if>
+        		<if test="empno != null">
+            		AND empno = #{empno}
+        		</if>
+        		<if test="deptno != null">
+            		AND deptno = #{deptno}
+        		</if>
+			</where>
+		</trim>
+ 	</select>
+ 	
+ 	<select id="vacation_table" parameterType ="int" resultType="vo.VacationVO">
+ 		select v.*
+	    from vacation v INNER JOIN emp e
+	    on v.empno = e.empno
+	    where v.deptno = #{deptno}
+ 	</select>
+ 	
+	<insert id="add" parameterType="vo.VacationVO">
+ 		INSERT INTO vacation(v_cate, start_date, end_date, v_date, v_content, v_check, empno, deptno, v_period)
+ 		VALUES(#{v_cate}, #{start_date}, #{end_date}, #{v_date}, #{v_content}, #{v_check}, #{empno}, #{deptno},#{v_period})
+ 	</insert>
+ 	
+ 	<!-- C_card2에서 emp정보를 통해 근퇴기록을 불러오기-->
+    <select id="vacationAll" parameterType="String" resultType="vo.VacationVO">
+        select * from vacation
+        where empno = #{empno}
+    </select>
+
+    <!-- C_card2에서 dept정보를 통해 근퇴기록을 불러오기-->
+    <select id="c2_va" parameterType="String" resultType="vo.VacationVO">
+        select *
+        from vacation
+        where deptno = #{deptno}
+    </select>
+
+    <!--C_card2 달력 날짜 가져오는 sql문장-->
+    <resultMap id="m1" type="vo.VacationVO">
+        <association property="evo" javaType="vo.EmpVO" select="emp.searchEmp" column="empno"/>
+        <association property="dvo" javaType="vo.DeptVO" select="dept.allDept" column="deptno"/>
+    </resultMap>
+    <select id="C_card2_searchdate" parameterType="String" resultMap="m1">
+        select *
+        from vacation
+        where (#{start_date} is null or start_date >= #{start_date})
+        and (#{end_date} is null or end_date &lt;= #{end_date})
+    </select>
+ 	
+ 	
+ 	<select id="getVacation" parameterType="Map" resultType="vo.VacationVO">
+		select v.idx,v.v_date,e.ename,v.start_date,v.end_date,v.v_cate, v.v_content, v.v_check
+	    from vacation v INNER JOIN emp e
+	    on v.empno = e.empno		
+	    
+	   
+    	<!-- 인자로 넘어온 Map에 empno라는 키가 있다면
+  			사번검색을 수행하는 SQL문을 지정한다. -->
+  		<trim prefixOverrides="AND">
+			<where>
+			   	<if test="idx != null">
+		  		   v.idx = #{idx}	
+		  		</if>
+		  		<if test="v_date!= null">
+		  		   	v.v_date = #{v_date}
+		  		</if>  		
+		  		<if test="ename!= null">
+		  			e.ename LIKE CONCAT('%',#{ename},'%')
+		  		</if>
+		  		<if test="v_cate != null">
+		  			v.v_cate LIKE CONCAT ('%',#{v_cate},'%')
+		  		</if>
+		  		<if test="v_content != null">
+		  			v.v_content LIKE CONCAT('%',#{v_content},'%')
+		  		</if>
+		  		<if test="v_check != null">
+		  			v.v_check = #{v_check}
+		  		</if>
+		  		<if test="w_start_time != null and w_end_time != null">
+			   	     AND w.w_date BETWEEN #{w_start_time} AND #{w_end_time}
+			  	</if>
+		  	</where>
+	  	</trim>
+ 	</select>
+
+	<select id="lookforVacation" parameterType="Map" resultType="vo.VacationVO">
+		select *
+	    from vacation v INNER JOIN emp e
+	    on v.empno = e.empno		
+		<trim prefixOverrides="AND">
+			<where>
+				<if test="v.deptno != null">
+		  		   v.deptno = #{deptno}
+		  		</if>
+			   	<if test="v_date != null">
+		  		   v.v_date LIKE CONCAT('%',#{v_date},'%')
+		  		</if>
+		  		<if test="ename!= null">
+		  		   	e.ename = #{ename}
+		  		</if>  		
+		  		<if test="v_cate!= null">
+		  			v.v_cate LIKE CONCAT('%',#{v_cate},'%')
+		  		</if>
+		  		<if test="start_date != null">
+			   	     AND start_date &gt;= #{start_date}
+			  	</if>
+			  	<if test="end_date != null">
+			  		AND end_date &lt;= #{end_date}
+			  	</if>
+		  	</where>
+	  	</trim>
+ 	</select>
+
+	<update id='update_yes' parameterType="Map">
+       UPDATE vacation
+       <set>
+       v_check = 1
+      </set>
+      WHERE idx = #{idx}
+      AND v_check = 0
+    </update> 
+    
+    <update id='update_no' parameterType="Map">
+       UPDATE vacation
+       <set>
+       v_check = 2
+      </set>
+      WHERE idx = #{idx}
+      AND v_check = 0
+    </update> 
+    
+     <select id="selectCount" resultType="int" parameterType="int">
+    	SELECT count(*) FROM vacation
+    	WHERE v_check = 0
+    	AND deptno = #{deptno}
+    </select>
+    
+</mapper>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="emp">
+
+	<!-- empno 를 인자로 받아서 해당하는 empVO 객체를 반환하는 쿼리 -->
+    <select id="searchEmp" parameterType="String" resultType="vo.EmpVO">
+        select * from emp
+        where empno = #{empno}
+    </select>
+   
+
+	<!-- [A_card1] empno 를 인자로 받아서 empVO 객체 + deptVO를 찾는 쿼리 -->
+    <resultMap id="mm" type="vo.EmpVO">
+        <association property="dvo" javaType="vo.DeptVO" select="dept.allDept" column="deptno"/>
+		<association property="avo" javaType="vo.AttendanceVO" column="empno" select="attendance.status"/>
+    </resultMap>
+
+    <select id="findEmp" parameterType="String" resultMap="mm">
+        select *
+        from emp
+        where empno = #{empno}
+    </select>
+
+
+    <!-- [A_card1] empno 를 인자로 받아서 empVO 객체의 업무일지를 담은 객체 리스트를 찾는 쿼리  -->
+    <resultMap id="m1" type="vo.EmpVO">
+   		 <id property="empno" column="empno"/>
+        <collection property="w_list" ofType="vo.WLogVO" column="empno" select="w_log.findWLog"/>
+    </resultMap>
+
+    <select id="findWLog" parameterType="String" resultMap="m1">
+        select *
+        from emp
+        where empno = #{empno}
+    </select>
+
+
+	<!-- [A_card1] empno 를 인자로 받아서 empVO 객체의 근태를 담은 객체 리스트를 찾는 쿼리  -->
+    <resultMap id="m2" type="vo.EmpVO">
+    	<id property="empno" column="empno"/>
+        <collection property="a_list" ofType="vo.AttendanceVO" column="empno" select="attendance.allAttendance"/>
+    </resultMap>
+
+    <select id="findAttendance" parameterType="String" resultMap="m2">
+        select *
+        from emp
+        where empno = #{empno}
+    </select>
+    
+    
+    <!-- 콤보박스&텍스트필드 값을 받아서 해당하는 EmpVO와 DeptVO를 찾는 쿼리 -->
+    <resultMap id="mmm" type="vo.EmpVO">
+    	<id property="deptno" column="deptno"/> 
+        <association property="dvo" javaType="vo.DeptVO" select="dept.allDept" column="deptno"/>
+    </resultMap>
+    
+    <select id="getDept" parameterType="Map" resultMap="mmm">
+		select *
+	    from emp e INNER JOIN dept d
+	    on e.deptno = d.deptno
+	    <where>
+    		<!-- 인자로 넘어온 Map에 empno라는 키가 있다면
+  			사번검색을 수행하는 SQL문을 지정한다. -->
+  			<if test="ename != null">
+  		    	e.ename LIKE CONCAT('%',#{ename},'%')
+  			</if>
+  			<if test="dname != null">
+  		    	d.dname = #{dname}
+  			</if>  		
+  			<if test="d_number != null">
+  				d.d_number LIKE CONCAT('%',#{d_number},'%')
+  			</if>
+  			<if test="phone != null">
+  				e.phone LIKE CONCAT('%',#{phone},'%')
+  			</if>
+  			<if test="empno != null">
+            	e.empno = #{empno}
+        	</if>
+    	</where>
+ 	</select>
+ 	
+ 	
+ 	<resultMap id="mmm123" type="vo.EmpVO">
+    	<id property="deptno" column="deptno"/> 
+        <association property="dvo" javaType="vo.DeptVO" select="dept.allDept" column="deptno"/>
+    </resultMap>
+ 	<select id="myDeptEmp" parameterType="Map" resultMap="mmm123">
+		select *
+	    from emp e INNER JOIN dept d
+	    on e.deptno = d.deptno
+	    <where>
+	    	e.deptno = #{deptno}
+  			<if test="ename != null">
+  		    	AND e.ename LIKE CONCAT('%',#{ename},'%')
+  			</if>		
+  			<if test="phone != null">
+  				AND e.phone LIKE CONCAT('%',#{phone},'%')
+  			</if>
+    	</where>
+ 	</select>
+ 	
+ 	<!-- empno를 인자를 가져서 member를 찾는  -->
+ 	<resultMap id="gm" type="vo.EmpVO">
+       <id property="empno" column="empno"/> 
+       <association property="mvo" javaType="vo.MemberVO" select="member.get_member" column="empno"/>
+    </resultMap>
+    
+    <select id="getMember" parameterType="Map" resultMap="gm">
+    	SELECT *
+    	FROM emp e INNER JOIN member m
+    	ON e.empno = m.empno
+    	<where>
+          <!-- 인자로 넘어온 Map에 empno라는 키가 있다면
+              사번검색을 수행하는 SQL문을 지정한다. -->
+        	<if test="a_cate != null">
+               m.a_cate = #{a_cate}
+        	</if>        
+        	<if test="id != null">
+            	m.id LIKE CONCAT('%',#{id},'%')
+        	</if>
+        	<if test="pw != null">
+            	m.pw = LIKE CONCAT('%',#{pw},'%')
+        	</if>
+	   		<if test="deptno != null">
+               m.deptno = #{deptno}
+           	</if>
+           	<if test="empno != null">
+            	e.empno = #{empno}
+           	</if>
+       </where>
+    </select>
+    
+    
+    <insert id="add" parameterType="vo.EmpVO"> 
+    INSERT INTO emp(empno, deptno, ename, job, employment, belong, address, hiredate, fire_date, join_status, position, hobby, birth, specialty, account_number,bank_info,verterans, obstacle,gender,phone) 
+    VALUES(#{empno}, #{deptno}, #{ename}, #{job}, #{employment}, #{belong}, #{address}, #{hiredate}, #{fire_date}, #{join_status}, #{position}, #{hobby}, #{birth}, #{specialty}, #{account_number},#{bank_info},#{verterans}, #{obstacle},#{gender},#{phone}) 
+    </insert>
+    
+    <update id='update' parameterType="vo.EmpVO">
+    UPDATE EMP
+    
+    <set>
+    	<trim suffixOverrides=","> 
+    		<if test="empno != null">
+		    empno = #{empno},
+		    </if>
+		    <if test="deptno != null">
+		    deptno = #{deptno},
+		    </if>
+		    <if test="ename != null">
+		    ename = #{ename},
+		    </if>
+		    job = #{job},
+		    employment = #{employment},
+		    belong = #{belong},
+		    address = #{address},
+		    <if test="hiredate != null">
+		    hiredate = #{hiredate},
+		    </if>
+		    fire_date = #{fire_date},
+		    join_status = #{join_status},
+		    <if test="position != null">
+		    position = #{position},
+		    </if>
+		    hobby = #{hobby},
+		    birth = #{birth},
+		    specialty = #{specialty},
+		    <if test="account_number != null">
+		    account_number = #{account_number},
+		    </if>
+		    bank_info = #{bank_info},
+		    verterans = #{verterans},
+		    obstacle = #{obstacle},
+			gender = #{gender},
+			phone = #{phone}
+		</trim>
+	</set>
+	WHERE empno = #{empno}
+    </update> 
+
+    <select id="empAll" resultType="vo.EmpVO">
+        select * from emp
+    </select>
+
+    <select id="dept10" resultType="vo.EmpVO">
+        select * from emp
+        where deptno = 10
+    </select>
+
+    <select id="dept20" resultType="vo.EmpVO">
+        select * from emp
+        where deptno = 20
+    </select>
+
+    <select id="dept30" resultType="vo.EmpVO">
+        select * from emp
+        where deptno = 30
+    </select>
+
+    <select id="dept40" resultType="vo.EmpVO">
+        select * from emp
+        where deptno = 40
+    </select>
+
+    <!-- card3_2테이블 함수 불러오기-->
+
+    <resultMap id="m3" type="vo.EmpVO">
+        <id property="empno" column="empno"/>
+        <association property="dvo" javaType="vo.DeptVO" select="dept.allDept" column="deptno"/>
+        <collection property="v_list" ofType="vo.VacationVO" select="vacation.vacationAll" column="empno"/>
+    </resultMap>
+
+    <select id="vac_select" parameterType="String" resultMap="m3">
+        select *
+        from emp
+        where ename
+        LIKE CONCAT('%', #{ename}, '%')
+    </select>
+
+    <!--C_card2에서 부서명을 매개로 부서에 해당하는 모든 사원 불러오기-->
+    <resultMap id="m4" type="vo.EmpVO">
+        <id property="empno" column="empno"/>
+        <collection property="v_list" ofType="vo.VacationVO" select="vacation.vacationAll" column="empno"/>
+    </resultMap>
+    <select id="C_card2_dept" parameterType="String" resultMap="m4">
+        select *
+        from emp
+        where deptno = #{deptno}
+    </select>
+
+    <update id="countDown" parameterType="Map">
+		UPDATE emp AS e
+		SET e.v_count = e.v_count - (SELECT v.v_period FROM vacation AS v WHERE e.empno = v.empno AND v.idx = #{idx})
+		WHERE EXISTS (SELECT 1 FROM vacation AS v WHERE e.empno = v.empno AND v.idx = #{idx})
+    </update>
+    
+    <select id="getVacationCount" parameterType="int" resultType="int">
+    	SELECT v_count
+    	FROM emp
+    	WHERE empno = #{empno}
+    </select>
+
+</mapper>

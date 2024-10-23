@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+
+	<!-- 입력한 id, pw를 담은 MemberVO를 받아서 DB에 있는지 확인하는 쿼리 -->
+	<select id="checkLogin" resultType="vo.MemberVO" parameterType="vo.MemberVO"> 
+		SELECT a.a_cate, m.empno, m.deptno, e.join_status, e.ename 
+		FROM member m INNER JOIN authority a 
+		ON m.a_cate = a.a_cate 
+		INNER JOIN emp e 
+		ON e.empno = m.empno 
+		WHERE id = #{id} 
+		AND pw = #{pw} 
+		AND e.join_status = 0
+	</select>
+ 	
+</mapper>
